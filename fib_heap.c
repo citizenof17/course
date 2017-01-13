@@ -146,6 +146,7 @@ void fibHeapLink(FibHeap *H, Node *y, Node *x)
     x->child = makeNewList();
   }
   listInsert(x->child, y);
+  y->p = x;
   x->degree++;
   y->mark = 0;
 }
@@ -225,15 +226,17 @@ void consolidate(FibHeap *H)
 Node* fibHeapExtractMin(FibHeap *H)
 {
   Node *z = H->min;
+
   if (z != NULL){
 
     if (z->child != NULL){
       Node *x = z->child->nil->right;
 
       while(x != z->child->nil){
-        listInsert(H->roots, x);
+        Node *aux = x->right;
         x->p = NULL;
-        x = x->right;
+        listInsert(H->roots, x);
+        x = aux;
       }
     }
 
@@ -282,6 +285,7 @@ void fibHeapDecreaseKey(FibHeap *H, Node *x, int k)
     printf("New value is bigger than previous!\n");
   x->key = k;
   Node *y = x->p;
+
   if (y != NULL && x->key < y->key){
     cut(H, x, y);
     cascadingCut(H, y);
@@ -290,19 +294,49 @@ void fibHeapDecreaseKey(FibHeap *H, Node *x, int k)
     H->min = x;
 }
 
+void Print2(FibHeap *H)
+{
+  Node *t = H->roots->nil->right;
+  while (t != H->roots->nil){
+    Print(t, 0);
+    t = t->right;
+  }
+  printf("=================\n");
+}
+
 void fibHeapDelete(FibHeap *H, Node *x)
 {
   fibHeapDecreaseKey(H, x, -1e9);
   fibHeapExtractMin(H);
 }
 
+Node *fibHeapSearch(List *L, int key)
+{
+  Node *res = NULL;
+  Node *h = L->nil->right;
+
+  while (h != L->nil){
+    if (res){
+      return res;
+    }
+    if (h->key == key){
+      res = h;
+    }else{
+      if (h->child){
+        res = fibHeapSearch(h->child, key);
+      }
+    }
+    h = h->right;
+  }
+  return res;
+}
 
 int main(void)  //// gcc -std=c99 fib_heap.c -lm
 {
   srand(time(NULL));
 
 
-  ///////// uncomment next for testing
+  ///////// uncomment next part for testing
 
   // FibHeap* H = makeFibHeap();
 
@@ -315,10 +349,7 @@ int main(void)  //// gcc -std=c99 fib_heap.c -lm
   // listPrintf(H->roots);
   // printf("\n");
 
-  // printf("min: %d\n", fibHeapMinimum(H)->key);
-
-  // printf("=================\n");
-
+  // fibHeapExtractMin(H);
   // fibHeapExtractMin(H);
 
   // Node *p = makeNewNode(20);
@@ -330,27 +361,21 @@ int main(void)  //// gcc -std=c99 fib_heap.c -lm
 
   // printf("=================\n");
 
-  // printf("\n");
+  // Print2(H);
 
-  // Node *t = H->roots->nil->right;
-  // while (t != H->roots->nil){
-  //   Print(t, 0);
-  //   t = t->right;
-  // }
-
-  // printf("=================\n");
   // fibHeapDelete(H, p);
 
-  // // printf("\n");
 
-  // t = H->roots->nil->right;
-  // while (t != H->roots->nil){
-  //   Print(t, 0);
-  //   t = t->right;
-  // }
+  // Print2(H);
 
-  // printf("=================\n");
+  // Node *toDel = fibHeapSearch(H->roots, 10);
 
+  // if (toDel != NULL)
+  //   printf("toDel: %d\n", toDel->key);
+
+  // fibHeapDelete(H, toDel);
+
+  // Print2(H);
 
   // printf("\n");
   // listPrintf(H->roots);
