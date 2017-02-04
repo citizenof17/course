@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/time.h>
 #include <time.h>
+
+long long size = 0;
 
 typedef struct Node
 {
@@ -145,6 +148,8 @@ void insert(Tree *T, int val)  //rb-insert
   Node *x = T->root;
   Node *z = makeNewNode(T, val);
 
+  size += sizeof(z);
+
   while (x != T->nil){
     y = x;
     if (z->key < x->key)
@@ -274,6 +279,9 @@ void delete(Tree *T, int val){
   
     if (yColor == 'b')
       deleteFixup(T, x);
+
+    size -= sizeof(z);
+    free(z);
   }
 }
 
@@ -290,39 +298,153 @@ void delete(Tree *T, int val){
 //    }
 // }
 
-int main(void)
+long mtime()
 {
+  //http://dkhramov.dp.ua/Comp/TimeCount
+  struct timeval t;
 
-  srand(time(NULL));
+  gettimeofday(&t, NULL);
+  long mt = (long)t.tv_sec * 1000 + t.tv_usec / 1000;
+  return mt;
+}
+
+void test(char* name_in, char* name_out)
+{
+  FILE *fin;
+  fin = fopen(name_in, "r");
+  FILE *fout;
+  fout = fopen(name_out, "w");
+
+  printf("OK\n");
+  int c;
 
   Tree *tr = NULL;
   tr = (Tree*)malloc(sizeof(Tree));
   tr->nil = makeNewNode(tr, 0);
   tr->root = tr->nil;
 
-  int n;
-  scanf("%d", &n);
+  size += sizeof(tr);
 
-  int p = 0;
+  fprintf(fout, "The size of the empty tree: %lli bytes\n", size);
+  printf("OK\n");
 
-  for (int i = 0; i < n; i++){
-    int a;
-    scanf("%d", &a);
-    insert(tr, a);
+  int i = 0;
+
+  while((c = fgetc(fin)) != EOF){
+    printf("%c\n", c);
+    if (c == 'r'){
+      int n = 0;
+      fscanf(fin, "%d", &n);
+
+      fprintf(fout, "Used memory before adding: %lli bytes\n", size);
+      long t = mtime();
+      for (int i = 0; i < n; i++){
+        int a;
+        fscanf(fin, "%d", &a);
+        insert(tr, a);
+      }
+      t = mtime() - t;
+
+      fprintf(fout, "Used memory after adding: %lli bytes\n", size);
+      fprintf(fout, "Adding %d elements in %li milliseconds\n\n", n, t);
+    }
+
+    if (c == 'd'){
+      int n = 0;
+      fscanf(fin, "%d", &n);
+      long t = mtime();
+
+      fprintf(fout, "Used memory before deleting: %lli bytes\n", size);
+
+      for (int i = 0; i < n; i++){
+        int a;
+        fscanf(fin, "%d", &a);
+        delete(tr, a);
+      }
+      t = mtime() - t;
+
+      fprintf(fout, "Used memory after deleting: %lli bytes\n", size);
+
+      fprintf(fout, "Deleting %d in %li: milliseconds\n\n", n, t);
+    }
+
+    if (c == 's'){
+      int n = 0;
+      fscanf(fin, "%d", &n);
+      long t = mtime();
+
+      for (int i = 0; i < n; i++){
+        int a;
+        fscanf(fin, "%d", &a);
+
+        treeSearch(tr, tr->root , a);
+      }
+
+      t = mtime() - t;
+      fprintf(fout, "Time for searching %d elements: %li milliseconds.\n\n", n, t);
+    }
+
+    if (c == 'm'){
+      Node *x = treeMinimum(tr, tr->root);
+      if (x != NULL)
+        fprintf(fout, "Minimum: %d\n\n", x->key);
+      else
+        fprintf(fout, "Empty tree\n\n");
+    }
   }
 
+  int fclose(FILE *fin);
+  int fclose(FILE *fout);
+}
 
-  // Print(tr->root, 0);
+int main(void)
+{
 
-  for (int i = 0; i < n; i++){
-    int a; 
-    scanf("%d", &a);
-    delete(tr, a);
-    // Print(tr->root, 0);
+  srand(time(NULL));
 
-  }
+  test("test.txt", "output.txt");
 
-  // Print(tr->root, 0);
+  // char* a = "test.txt";
+  // char* b = "output.txt";
+  // FILE *f;
+  // f = fopen(a, "r");
 
+  // int t;
+  // fscanf(f, "%d", &t);
+
+  // FILE *o;
+  // o = fopen(b, "w");
+  // fprintf(o, "%d", t);
+
+  // Tree *tr = NULL;
+  // tr = (Tree*)malloc(sizeof(Tree));
+  // tr->nil = makeNewNode(tr, 0);
+  // tr->root = tr->nil;
+
+  // int n;
+  // scanf("%d", &n);
+
+  // int p = 0;
+
+  // for (int i = 0; i < n; i++){
+  //   int a;
+  //   scanf("%d", &a);
+  //   insert(tr, a);
+  // }
+
+
+  // // Print(tr->root, 0);
+
+  // for (int i = 0; i < n; i++){
+  //   int a; 
+  //   scanf("%d", &a);
+  //   delete(tr, a);
+  //   // Print(tr->root, 0);
+
+  // }
+
+  // // Print(tr->root, 0);
+
+  // gcc -std=c99 rb_tree.c -lm
   return 0;
 }
