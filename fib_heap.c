@@ -184,6 +184,7 @@ void consolidate(FibHeap *H)
 
   Node* w = H->roots->nil->right;
   while(w != H->roots->nil){
+    Node *wn = w->right;
     Node *x = w;
 
     int d = x->degree;
@@ -203,11 +204,11 @@ void consolidate(FibHeap *H)
       d++;
     }
     A[d] = x;
-    w = w->right;
+    w = wn;
   }
 
   H->min = NULL;
-  for (int i = 0; i < size; i++){
+  for (int i = 0; i < size + 1; i++){
     if (A[i] != NULL){
       if (H->min == NULL){
         H->roots = makeNewList();
@@ -230,6 +231,7 @@ Node* fibHeapExtractMin(FibHeap *H)
   if (z != NULL){
 
     if (z->child != NULL){
+
       Node *x = z->child->nil->right;
 
       while(x != z->child->nil){
@@ -241,14 +243,17 @@ Node* fibHeapExtractMin(FibHeap *H)
     }
 
     listDelete(H->roots, z);
+    // Print2(H);
 
     if (z == z->right->right && z == z->left->left ){  //differ
       H->min = NULL;
     }else{
+
       if (z->right == H->roots->nil)
         H->min = z->left;
       else
         H->min = z->right;
+
       consolidate(H);
     }
     H->n--;
@@ -313,6 +318,10 @@ void fibHeapDelete(FibHeap *H, Node *x)
 Node *fibHeapSearch(List *L, int key)
 {
   Node *res = NULL;
+
+  if (L == NULL)
+  return res;
+  
   Node *h = L->nil->right;
 
   while (h != L->nil){
@@ -335,13 +344,12 @@ int main(void)  //// gcc -std=c99 fib_heap.c -lm
 {
   srand(time(NULL));
 
-
   ///////// uncomment next part for testing
 
   // FibHeap* H = makeFibHeap();
 
-  // for (int i = 0; i < 15; i++){
-  //   Node *nd = makeNewNode(i);
+  // for (int i = 0; i < 10; i++){
+  //   Node *nd = makeNewNode(rand() % 100);
   //   fibHeapInsert(H, nd);
   // }
 
@@ -349,8 +357,14 @@ int main(void)  //// gcc -std=c99 fib_heap.c -lm
   // listPrintf(H->roots);
   // printf("\n");
 
+  // Print2(H);
+
   // fibHeapExtractMin(H);
+  // Print2(H);
+
   // fibHeapExtractMin(H);
+  // Print2(H);
+
 
   // Node *p = makeNewNode(20);
 
@@ -365,15 +379,14 @@ int main(void)  //// gcc -std=c99 fib_heap.c -lm
 
   // fibHeapDelete(H, p);
 
-
   // Print2(H);
 
   // Node *toDel = fibHeapSearch(H->roots, 10);
 
-  // if (toDel != NULL)
+  // if (toDel != NULL){
   //   printf("toDel: %d\n", toDel->key);
-
-  // fibHeapDelete(H, toDel);
+  //   fibHeapDelete(H, toDel);
+  // }
 
   // Print2(H);
 
