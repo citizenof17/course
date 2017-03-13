@@ -321,8 +321,10 @@ void fibHeapDelete(FibHeap *H, Node *x)
 Node *fibHeapSearch(List *L, int key)
 {
   Node *res = NULL;
+
   if (L == NULL)
     return res;
+  
   Node *h = L->nil->right;
 
   while (h != L->nil){
