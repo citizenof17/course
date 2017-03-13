@@ -121,7 +121,7 @@ Treap* treapSearch(Treap *t, int key)
 
 Treap* treapMinimum(Treap *t)
 {
-  while(t->l){
+  while(t && t->l){
     t = t->l;
   }
   return t;
@@ -144,13 +144,12 @@ void test(char* name_in, char* name_out)
   FILE *fout;
   fout = fopen(name_out, "w");
 
-  printf("OK\n");
   int c;
 
   Treap *tr = NULL;
 
+  size += sizeof(tr);
   fprintf(fout, "The size of the empty tree: %lli bytes\n", size);
-  printf("OK\n");
 
   int i = 0;
 
