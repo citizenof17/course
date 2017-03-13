@@ -38,49 +38,48 @@ Node* treeSearch(Tree *T, Node *x, int k)  //x is a root of the subtree
     return x;
 
   if (k < x->key)
-    return treeSearch(T, x->left, k);
+    return treeSearch(T, x->left, k);  //find in the left child
   else
-    return treeSearch(T, x->right, k);
+    return treeSearch(T, x->right, k);  //find in the right child
 }
 
-Node* treeMinimum(Tree *T, Node *x)
+Node* treeMinimum(Tree *T, Node *x)  
 {
-  while(x->left != T->nil)
+  while(x != T->nil && x->left != T->nil)   
     x = x->left;
   return x;
 }
 
 Node* treeMaximum(Tree *T, Node *x)
 {
-  while(x->right != T->nil)
+  while(x != T->nil && x->right != T->nil)
     x = x->right;
   return x;
 }
 
 void leftRotate(Tree *T, Node *x)
 {
-  Node *y = x->right;
+  Node *y = x->right;   
+  x->right = y->left;   //transfer left y son to right x's
 
-  x->right = y->left;
+  if (y->left != T->nil)   
+    y->left->p = x;    //change y's left son's parent 
+  y->p = x->p;    //change y's parent
 
-  if (y->left != T->nil)
-    y->left->p = x;
-  y->p = x->p;
-
-  if (x->p == T->nil)
-    T->root = y;
+  if (x->p == T->nil)  
+    T->root = y;   //new tree root
   else{
-    if (x == x->p->left)
-      x->p->left = y;
+    if (x == x->p->left)  
+      x->p->left = y;   //x's parent's left son is y 
     else
-      x->p->right = y;
+      x->p->right = y;  //x's parent's right son is y 
   }
 
-  y->left = x;
+  y->left = x; 
   x->p = y;
 }
 
-void rightRotate(Tree *T, Node *x)
+void rightRotate(Tree *T, Node *x) //same as left rotate but all lefts changed to rights
 {
   Node *y = x->left;
   x->left = y->right;
@@ -315,7 +314,6 @@ void test(char* name_in, char* name_out)
   FILE *fout;
   fout = fopen(name_out, "w");
 
-  printf("OK\n");
   int c;
 
   Tree *tr = NULL;
@@ -326,7 +324,6 @@ void test(char* name_in, char* name_out)
   size += sizeof(tr);
 
   fprintf(fout, "The size of the empty tree: %lli bytes\n", size);
-  printf("OK\n");
 
   int i = 0;
 
