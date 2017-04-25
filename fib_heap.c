@@ -4,8 +4,6 @@
 #include <time.h>
 #include <math.h>
 
-long long size = 0;
-
 typedef struct Node
 {
   int key;
@@ -46,6 +44,7 @@ void listDelete(List *l, Node *x)
 {
   x->left->right = x->right;
   x->right->left = x->left;
+  // free(x);
 }
 
 Node* listSearch(List *l, int k)
@@ -110,7 +109,6 @@ FibHeap* makeFibHeap()
 
 void fibHeapInsert(FibHeap *H, Node *x)
 {
-  size += sizeof(x);
   if (H->min == NULL){
     List* l = makeNewList();
     listInsert(l, x);
@@ -131,7 +129,7 @@ Node* fibHeapMinimum(FibHeap* H)
 
 FibHeap* fibHeapUnion(FibHeap *H1, FibHeap *H2)
 {
-  FibHeap *H = makeFibHeap();
+  FibHeap *H; // = makeFibHeap();
   H->min = H1->min;
   H->roots = listUnion(H1->roots, H2->roots);
   if (H1->min == NULL || (H2->min != NULL && H2->min->key < H1->min->key)){
@@ -181,7 +179,6 @@ void Print(Node *q, long n) ////auxiliary function for testing
 
 void consolidate(FibHeap *H)
 {
-  int size = 0;
   if (H->n > 1)
     size = round(log((double)H->n - 1)/log(3.236067977/2.0));
   Node *A[size + 1];  //1
@@ -214,6 +211,10 @@ void consolidate(FibHeap *H)
     w = wn;
   }
 
+  if (H->roots != NULL){
+    free(H->roots->nil);
+  }
+  free(H->roots);
   H->min = NULL;
   for (int i = 0; i < size + 1; i++){
     if (A[i] != NULL){
@@ -236,6 +237,7 @@ Node* fibHeapExtractMin(FibHeap *H)
   Node *z = H->min;
 
   if (z != NULL){
+    
 
     if (z->child != NULL){
       Node *x = z->child->nil->right;
@@ -315,7 +317,11 @@ void Print2(FibHeap *H)
 void fibHeapDelete(FibHeap *H, Node *x)
 {
   fibHeapDecreaseKey(H, x, -1e9);
-  fibHeapExtractMin(H);
+  Node *temp = fibHeapExtractMin(H);
+  if (temp->child != NULL)
+    free(temp->child->nil);
+  free(temp->child);
+  free(temp);
 }
 
 Node *fibHeapSearch(List *L, int key)
@@ -345,7 +351,6 @@ Node *fibHeapSearch(List *L, int key)
 
 long mtime()
 {
-  //http://dkhramov.dp.ua/Comp/TimeCount
   struct timeval t;
 
   gettimeofday(&t, NULL);
@@ -353,145 +358,99 @@ long mtime()
   return mt;
 }
 
-void test(char* name_in, char* name_out)
-{
-  FILE *fin;
-  fin = fopen(name_in, "r");
-  FILE *fout;
-  fout = fopen(name_out, "w");
-
-  int c;
-
-  FibHeap* H = makeFibHeap();
-  size += sizeof(H);
-
-  fprintf(fout, "The size of the empty tree: %lli bytes\n", size);
-
-  int i = 0;
-
-  while((c = fgetc(fin)) != EOF){
-    printf("%c\n", c);
-    if (c == 'r'){
-      int n = 0;
-      fscanf(fin, "%d", &n);
-
-      fprintf(fout, "Used memory before adding: %lli bytes\n", size);
-      long t = mtime();
-      for (int i = 0; i < n; i++){
-        int a;
-        fscanf(fin, "%d", &a);
-        Node *nd = makeNewNode(i);
-        fibHeapInsert(H, nd);
-      }
-      t = mtime() - t;
-
-      fprintf(fout, "Used memory after adding: %lli bytes\n", size);
-      fprintf(fout, "Adding %d elements in %li milliseconds\n\n", n, t);
+void clearHeap(List *L){
+  if (L != NULL){
+    Node *h = L->nil->right;
+    while (h != L->nil){
+      clearHeap(h->child);
+      Node* aux = h->right;
+      free(h);
+      h = aux;
     }
-
-    if (c == 'd'){
-      int n = 0;
-      fscanf(fin, "%d", &n);
-      long t = mtime();
-
-      fprintf(fout, "Used memory before deleting: %lli bytes\n", size);
-
-      for (int i = 0; i < n; i++){
-        int a;
-        fscanf(fin, "%d", &a);
-
-        if (i < 10){  //searching for O(n), so it's too slow;
-          Node *x = fibHeapSearch(H->roots, a);
-          if (x != NULL)
-            fibHeapDelete(H, x);
-        }
-
-      }
-      t = mtime() - t;
-
-      fprintf(fout, "Used memory after deleting: %lli bytes\n", size);
-
-      fprintf(fout, "Deleting %d in %li: milliseconds\n\n", n, t);
-    }
-
-    if (c == 's'){
-      int n = 0;
-      fscanf(fin, "%d", &n);
-      long t = mtime();
-
-      for (int i = 0; i < n; i++){
-        int a;
-        fscanf(fin, "%d", &a);
-        if (i < 10){  //searching for O(n), so it's too slow;
-          Node *x = fibHeapSearch(H->roots, a);
-        }
-      }
-
-      t = mtime() - t;
-      fprintf(fout, "Time for searching %d elements: %li milliseconds.\n\n", n, t);
-    }
-
-    if (c == 'm'){
-      fibHeapExtractMin(H);
-    }
+    free(L->nil);
   }
-
-  int fclose(FILE *fin);
-  int fclose(FILE *fout);
+  free(L);
 }
 
 int main(void)  //// gcc -std=c99 fib_heap.c -lm
 {
   srand(time(NULL));
 
-  test("test.txt", "output.txt");
-  ///////// uncomment next part for testing
+  FILE *fout;
+  fout = fopen("fibHeap1.txt", "w");
 
-  // FibHeap* H = makeFibHeap();
+  int Test = 512;
+  const int T = Test;
+  double tests[T];
 
-  // for (int i = 0; i < 15; i++){
-  //   Node *nd = makeNewNode(rand() % 100);
-  //   fibHeapInsert(H, nd);
-  // }
+  for (int n = 100000; n <= 100000; n += 1000){
+    fprintf(fout, "%d\n", n);
+    Test = 512;
+    for (int i = 0; i < T; i++){
+      tests[i] = 0;
+    }
 
-  // printf("\n");
-  // listPrintf(H->roots);
-  // printf("\n");
-  // printf("=================\n");
+    while(Test > 0){
+      Test--;
 
+    FibHeap *H = makeFibHeap();
 
-  // // fibHeapExtractMin(H);
-  // // fibHeapExtractMin(H);
+    int nElem = 100000;
+    int p = n;
+    // const int N = p;
+    // int arr[N];
 
-  // Node *p = makeNewNode(20);
+    for (int i = 0; i < p; i++){
+      int a = rand() % 1000000;
+      Node *nd = makeNewNode(a);
+      fibHeapInsert(H, nd);
+      // arr[i] = a;
+    }
 
-  // printf("%d\n", H->n);
-  // fibHeapInsert(H, p);
-  // printf("%d\n", H->n);
+    clock_t ti1 = clock();
 
-  // printf("=================\n");
+    for (int i = 0; i < nElem; i++){
+      Node *temp = fibHeapExtractMin(H);
+      if (temp->child != NULL)
+        free(temp->child->nil);
+      free(temp->child);
+      free(temp);
+      int a = rand() % 1000000;
+      Node *nd = makeNewNode(a);
+      fibHeapInsert(H, nd);
+      // arr[i % n] = a;
+    }
 
-  // Print2(H);
+  clock_t ti2 = clock();
+    clearHeap(H->roots);
+    double ans = (double)(ti2 - ti1) / CLOCKS_PER_SEC;
+    fprintf(fout, "%f\n", ans);
+    tests[Test] = ans;
+    free(H);
+  }
 
-  // // fibHeapDelete(H, p);
+  int dis[16] = {0};
 
-  // Print2(H);
-  // printf("=================\n");
+  double mx = 0;
+  double mn = 100;
 
-  // Node *toDel = fibHeapSearch(H->roots, 10);
+  for (int i = 0; i < T; i++){
+    if (tests[i] > mx)
+      mx = tests[i];
+    if (tests[i] < mn)
+      mn = tests[i];
+  }
 
-  // if (toDel != NULL){
-  //   printf("toDel: %d\n", toDel->key);
-  //   fibHeapDelete(H, toDel);
-  // }
+  double step = (mx - mn) / 16;
 
-  // Print2(H);
+  for (int i = 0; i < T; i++){
+    dis[(int)((tests[i] - mn) / step)]++;
+  }
 
-  // printf("\n");
-  // listPrintf(H->roots);
-  // printf("\n");
-
-  // printf("%d\n", H->n);
-
+  for (int i = 0; i < 16; i++){
+    fprintf(fout, "%d ", dis[i]);
+  }
+    fprintf(fout, "\n");
+  }
   return 0;
 }
