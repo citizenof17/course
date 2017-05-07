@@ -179,6 +179,7 @@ void Print(Node *q, long n) ////auxiliary function for testing
 
 void consolidate(FibHeap *H)
 {
+  int size = 0;
   if (H->n > 1)
     size = round(log((double)H->n - 1)/log(3.236067977/2.0));
   Node *A[size + 1];  //1
