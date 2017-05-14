@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 
 typedef struct Node
 {
@@ -302,54 +303,58 @@ int main(void)
   srand(time(NULL));
 
   FILE *fout;
-  fout = fopen("rbtree1.txt", "a");
+  fout = fopen("rbtree3.txt", "w");
 
-  int Test = 512;
+  int Test = 500;
   const int T = Test;
   double tests[T];
-  for (int n = 100000; n <= 100000; n += 1000){
-  fprintf(fout, "%d\n", n);
-  Test = 512;
-  for (int i = 0; i < T; i++){
-    tests[i] = 0;
-  }
-  while(Test > 0){
-    Test--;
-    Tree *tr = NULL;
-    tr = (Tree*)malloc(sizeof(Tree));
-    tr->nil = makeNewNode(tr, 0);
-    tr->root = tr->nil;
-
-    int nElem = 100000;
-
-    int p = n + 1;
-    const int N = p;
-    int arr[N];
-
-    for (int i = 0; i < p; i++){
-      int a = rand() % 1000000;
-      insert(tr, a);
-      arr[i] = a;
+  int nPerTest = 3000000;
+  for (int n = 1000; n <= 100000; n += 3000, nPerTest -= 60600){
+    Test = T;
+    for (int i = 0; i < T; i++){
+      tests[i] = 0;
     }
 
-    clock_t ti1 = clock();
+    fprintf(fout, "%d %d\n", n, nPerTest);
 
-    for (int i = 0; i < nElem; i++){
-      delete(tr, arr[i % n]);
-      int a = rand() % 1000000;
-      insert(tr, a);
-      arr[i % n] = a;
+    while(Test > 0){
+      
+      Test--;
+      Tree *tr = NULL;
+      tr = (Tree*)malloc(sizeof(Tree));
+      tr->nil = makeNewNode(tr, 0);
+      tr->root = tr->nil;
+
+      int nElem = nPerTest;
+
+      int p = n + 1;
+      const int N = p;
+      int arr[N];
+
+      for (int i = 0; i < p; i++){
+        int a = rand() % 1000000000;
+        insert(tr, a);
+        arr[i] = a;
+      }
+
+      clock_t ti1 = clock();
+
+      for (int i = 0; i < nElem; i++){
+        delete(tr, arr[i % n]);
+        int a = rand() % 1000000000;
+        insert(tr, a);
+        arr[i % n] = a;
+      }
+
+      clock_t ti2 = clock();
+
+      clearTree(tr, tr->root);
+
+      double ans = (double)(ti2 - ti1) / CLOCKS_PER_SEC;
+      fprintf(fout, "%f\n", ans);
+      tests[Test] = ans;
+      free(tr);
     }
-
-    clock_t ti2 = clock();
-
-    clearTree(tr, tr->root);
-
-    double ans = (double)(ti2 - ti1) / CLOCKS_PER_SEC;
-    fprintf(fout, "%f\n", ans);
-    tests[Test] = ans;
-    free(tr);
-  }
 
   int dis[16] = {0};
 
@@ -376,6 +381,7 @@ int main(void)
   }
   fprintf(fout, "\n");
 }
+
 
   // gcc -std=c99 rb_tree.c -lm
   //valgrind --leak-check=full --leak-resolution=med  ... 

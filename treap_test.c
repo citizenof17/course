@@ -42,7 +42,7 @@ void insert(Treap **t, Treap* it)
 void merge(Treap **t, Treap *l, Treap *r)
 {
   if (l == NULL || r == NULL){
-    free(*t);
+    // free(*t);
     *t = l ? l : r;
   }
   else{
@@ -62,6 +62,7 @@ void delete(Treap **t, int key)
     return;
   }
   if ((**t).key == key){
+    free(*t);
     merge(t, (**t).l, (**t).r);
   }
   else{
@@ -140,14 +141,17 @@ int main(void)
   srand(time(NULL));
 
   FILE *fout;
-  fout = fopen("treap1.txt", "a");
+  fout = fopen("treap3.txt", "w");
 
-  int Test = 512;
+  int Test = 500;
   const int T = Test;
+  //2500000
+  //900000
+  int nPerTest = 2500000;
   double tests[T];
-  for (int n = 100000; n <= 100000; n += 1000){
-    fprintf(fout, "%d\n", n);
-    Test = 512;
+  for (int n = 1000; n <= 100000; n += 3000, nPerTest -= 48480){
+    fprintf(fout, "%d %d\n", n, nPerTest);
+    Test = T;
     for (int i = 0; i < T; i++){
       tests[i] = 0;
     }
@@ -155,14 +159,14 @@ int main(void)
       Test--;
       Treap *tr = NULL;
 
-      int nElem = 100000;
+      int nElem = nPerTest;
 
       int p = n + 1;
       const int N = p;
       int arr[N];
 
       for (int i = 0; i < p; i++){
-        int a = rand() % 1000000;
+        int a = rand() % 1000000000;
         Treap *t = makeNewTreap(a);    
         insert(&tr, t);
         arr[i] = a;
@@ -172,7 +176,7 @@ int main(void)
 
       for (int i = 0; i < nElem; i++){
         delete(&tr, arr[i % n]);
-        int a = rand() % 1000000;
+        int a = rand() % 1000000000;
         Treap *t = makeNewTreap(a);    
         insert(&tr, t);
         arr[i % n] = a;

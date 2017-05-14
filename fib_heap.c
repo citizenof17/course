@@ -378,15 +378,18 @@ int main(void)  //// gcc -std=c99 fib_heap.c -lm
   srand(time(NULL));
 
   FILE *fout;
-  fout = fopen("fibHeap1.txt", "w");
+  fout = fopen("fibHeap2.txt", "w");
 
-  int Test = 512;
+  int Test = 500;
   const int T = Test;
   double tests[T];
+  //3000000;
+  //1300000;
+  int nPerTest = 3000000;
 
-  for (int n = 100000; n <= 100000; n += 1000){
-    fprintf(fout, "%d\n", n);
-    Test = 512;
+  for (int n = 1000; n <= 100000; n += 3000, nPerTest -= 51500){
+    fprintf(fout, "%d %d\n", n, nPerTest);
+    Test = T;
     for (int i = 0; i < T; i++){
       tests[i] = 0;
     }
@@ -396,13 +399,13 @@ int main(void)  //// gcc -std=c99 fib_heap.c -lm
 
     FibHeap *H = makeFibHeap();
 
-    int nElem = 100000;
+    int nElem = nPerTest;
     int p = n;
     // const int N = p;
     // int arr[N];
 
     for (int i = 0; i < p; i++){
-      int a = rand() % 1000000;
+      int a = rand() % 1000000000;
       Node *nd = makeNewNode(a);
       fibHeapInsert(H, nd);
       // arr[i] = a;
@@ -416,7 +419,7 @@ int main(void)  //// gcc -std=c99 fib_heap.c -lm
         free(temp->child->nil);
       free(temp->child);
       free(temp);
-      int a = rand() % 1000000;
+      int a = rand() % 1000000000;
       Node *nd = makeNewNode(a);
       fibHeapInsert(H, nd);
       // arr[i % n] = a;
